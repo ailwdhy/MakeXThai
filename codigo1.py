@@ -547,7 +547,7 @@ def abrir_garra():
     #
     garra_s.move(-45)   #MOVER SI VA AL REVEZ
     garra_s.set_power(0)
-    ..
+    ...
 
 
 
@@ -624,12 +624,12 @@ direction = 1
 
 # manita
 
-
 def todo():
     global kpot
     global direction
     global switch_garra_banda
     global auto
+
     # ----------------------Movimiento del chasis-----------------------
     lx = gamepad.get_joystick("Lx")
     ly = gamepad.get_joystick("Ly")
@@ -639,96 +639,93 @@ def todo():
     pow_M3 = -ly - lx + rx
     pow_M4 = ly - lx + rx
     time.sleep(0.001)
-    fl.set_power(max(pow_M1*kpot))
-    fr.set_power(max(pow_M2*kpot))
-    bl.set_power(max(pow_M3*kpot))
-    br.set_power(max(pow_M4*kpot))
+    fl.set_power(max(pow_M1 * kpot))
+    fr.set_power(max(pow_M2 * kpot))
+    bl.set_power(max(pow_M3 * kpot))
+    br.set_power(max(pow_M4 * kpot))
 
-    # Cambia el valor de la potencia para ir mas rapido si se desea
+    # Cambia el valor de la potencia para ir más rápido si se desea
     if gamepad.is_key_pressed("L_Thumb") or gamepad.is_key_pressed("R_Thumb"):
         kpot = 1
     else:
         kpot = 0.68
+
     # ----------------------Sistema de lanzadora-----------------------
     # Primer intake
-# Variables para controlar el estado del motor y su dirección
-motor_activado = False
-direccion = 1  # 1 para adelante, -1 para atrás
+    # Variables para controlar el estado del motor y su dirección
+    motor_activado = False
+    direccion = 1  # 1 para adelante, -1 para atrás
 
-# Bucle principal del programa
-while True:
-time.sleep(0.01)
-    # Verificar si se ha presionado la tecla N2
-    if gamepad.is_key_pressed("N2"):
-        if not motor_activado:  # Si el motor no está activado, lo activamos
-            power_expand_board.set_power(M_BANDA_1, 100)
-            motor_activado = True
-        else:  # Si el motor está activado, lo desactivamos
-            power_expand_board.set_power(M_BANDA_1, 0)
-            motor_activado = False
+    # Bucle principal del programa
+    while True:
+        time.sleep(0.01)
+        # Verificar si se ha presionado la tecla N2
+        if gamepad.is_key_pressed("N2"):
+            if not motor_activado:  # Si el motor no está activado, lo activamos
+                power_expand_board.set_power(M_BANDA_1, 100)
+                motor_activado = True
+            else:  # Si el motor está activado, lo desactivamos
+                power_expand_board.set_power(M_BANDA_1, 0)
+                motor_activado = False
 
-    # Verificar si se ha presionado la tecla N3
-    if gamepad.is_key_pressed("N3"):
-        if motor_activado:  # Si el motor está activado, cambiamos la dirección
-            power_expand_board.set_power(M_BANDA_2, 100 * direccion)
-            direccion *= -1
+        # Verificar si se ha presionado la tecla N3
+        if gamepad.is_key_pressed("N3"):
+            if motor_activado:  # Si el motor está activado, cambiamos la dirección
+                power_expand_board.set_power(M_BANDA_2, 100 * direccion)
+                direccion *= -1
 
+        # Banda de aeropuerto
+        if gamepad.is_key_pressed("N1"):
+            power_expand_board.set_power(M_BANDA_2, -100)
+        elif gamepad.is_key_pressed("N4"):
+            power_expand_board.set_power(M_BANDA_2, 100)
+        else:
+            power_expand_board.set_power(M_BANDA_2, 0)
 
-    # Banda de aereopuerto
-    if gamepad.is_key_pressed("N1"):
-        power_expand_board.set_power(M_BANDA_2, -100)
-    elif gamepad.is_key_pressed("N4"):
-        power_expand_board.set_power(M_BANDA_2, 100)
-    else:
-        power_expand_board.set_power(M_BANDA_2, 0)
+        # ----------------------Sistema de manitas-----------------------
+        if gamepad.is_key_pressed("Up"):
+            power_expand_board.set_power(M_SUBIR_MANOS, -100)
+        elif gamepad.is_key_pressed("Down"):
+            power_expand_board.set_power(M_SUBIR_MANOS, 100)
+        else:
+            power_expand_board.set_power(M_SUBIR_MANOS, 0)
 
-    # ----------------------Sistema de manitas-----------------------
-    if gamepad.is_key_pressed("Up"):
-        power_expand_board.set_power(M_SUBIR_MANOS, -100)
-    elif gamepad.is_key_pressed("Down"):
-        power_expand_board.set_power(M_SUBIR_MANOS, 100)
-    else:
-        power_expand_board.set_power(M_SUBIR_MANOS, 0)
+        # Girar el servo de ángulo de lanzadora
+        if gamepad.is_key_pressed("R2"):
+            Lanzador_s.set_power(10)  # original 15
+            pararServo(Lanzador_s)
+        elif gamepad.is_key_pressed("L2"):
+            Lanzador_s.set_power(-10)
+            pararServo(Lanzador_s)
+        else:
+            Lanzador_s.set_power(0)
 
-    # girar el servo de de angulo de lanzadora
-    if gamepad.is_key_pressed("R2"):
-        Lanzador_s.set_power(10)  # original 15
-        pararServo(Lanzador_s)
-    elif gamepad.is_key_pressed("L2"):
-        Lanzador_s.set_power(-10)
-        pararServo(Lanzador_s)
-    else:
-        Lanzador_s.set_power(0)
+        # Controla el gripper
+        if gamepad.is_key_pressed("R1"):
+            garra_s.set_power(-90)  # original 90
+            pararServo(garra_s)
+        elif gamepad.is_key_pressed("L1"):
+            garra_s.set_power(90)
+            pararServo(garra_s)
+        else:
+            garra_s.set_power(0)
 
-    # Controla el gripper
-    if gamepad.is_key_pressed("R1"):
-        garra_s.set_power(-90)  # original 90
-        pararServo(garra_s)
-    elif gamepad.is_key_pressed("L1"):
-        garra_s.set_power(90)
-        pararServo(garra_s)
-    else:
-       garra_s.set_power(0)
+        # ---------------- Controlar Bandera --------------------
+        if gamepad.is_key_pressed("Right"):
+            power_expand_board.set_power(BANDERA, 100)
+        elif gamepad.is_key_pressed("Left"):
+            power_expand_board.set_power(BANDERA, -100)
+        else:
+            power_expand_board.stop(BANDERA)
 
-        
+        # ---------------- Activar Autonomo --------------------
+        if gamepad.is_key_pressed("≡") and not auto:
+            auto = True
+            automate2()
 
-# ---------------- Controlar Bandera --------------------
-
-    if gamepad.is_key_pressed("Right"):
-        power_expand_board.set_power(BANDERA, 100)
-    elif gamepad.is_key_pressed("Left"):
-        power_expand_board.set_power(BANDERA, -100)
-    else:
-        power_expand_board.stop(BANDERA)
-
-# ---------------- Activar Autonomo --------------------
-
-    if gamepad.is_key_pressed("≡") and not auto:
-        auto = True
-        automate2()
-# --------------- Control Brushless ----------------------
-    power_expand_board.set_power("BL1", girar_brush*60)  # original50
-    power_expand_board.set_power("BL2", girar_brush*60)
+        # --------------- Control Brushless ----------------------
+        power_expand_board.set_power("BL1", girar_brush * 60)  # original 50
+        power_expand_board.set_power("BL2", girar_brush * 60)
 
 
 def boton(btn, func):
@@ -756,9 +753,8 @@ def Manual():
         todo()
         boton("+", para_giro_brush)
 
+
 # -----------------------  Tests ------------------------
-
-
 def test_turn_times():
     girarIzquierda(60)
     time.sleep(TIME_90_DEG_I)
@@ -782,7 +778,6 @@ def test_turn_times():
 
 
 def test_paralelar():
-
     paralelar()
     time.sleep(0.8)
 
@@ -799,8 +794,7 @@ def automate2():
     reset_timer()
     reposo = 0.25
 
-    # inicia en la esquina derecha inferior, viendo a la izquierda (viendo al robot aliado)
-    #
+    # Inicia en la esquina derecha inferior, viendo a la izquierda (viendo al robot aliado)
     rgb_sensor.set_led_color("red")
     # 3.5 como margen de error, porque choca con la dis pura
     run_to(TO_LEFT * 0.4 + 4)
@@ -829,10 +823,10 @@ def automate2():
     time.sleep(TIME_90_DEG_D)
     stop()
     time.sleep(reposo)
-
+    
     # alinear()
     # time.sleep(reposo)
-
+    
     run_to(TO_FRONT * 0.72 - 9.5 - 2)
     time.sleep(reposo)
 
