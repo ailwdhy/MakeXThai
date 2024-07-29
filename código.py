@@ -1,7 +1,8 @@
 # agregar stop entre tiempos
 # agregar indicardor de haber agarrado amarillo
 
-from novapi import *
+import time
+from novapi import * 
 from mbuild.ranging_sensor import ranging_sensor_class
 from mbuild.dual_rgb_sensor import dual_rgb_sensor_class
 from mbuild.encoder_motor import encoder_motor_class
