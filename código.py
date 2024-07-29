@@ -1,15 +1,42 @@
-# agregar stop entre tiempos
-# agregar indicardor de haber agarrado amarillo
+#Codigo de prueba ya reestructurado para el mundial.
+#Ultima actualizacion 03/07/2024
 
-import time
-from novapi import * 
+
+#DEFINIR LA IMPORTACIONES DE LA LIBRERIAS
+
+from novapi import *
 from mbuild.ranging_sensor import ranging_sensor_class
 from mbuild.dual_rgb_sensor import dual_rgb_sensor_class
 from mbuild.encoder_motor import encoder_motor_class
 from mbuild import power_expand_board
 from mbuild.smartservo import smartservo_class
 from mbuild import gamepad
+from mbuild import power_manage_module
 
+# DEFINICION DE MOTORES ENCODER
+fl = encoder_motor_class("M1", "INDEX1")
+fr = encoder_motor_class("M2", "INDEX1")
+bl = encoder_motor_class("M3", "INDEX1")
+br = encoder_motor_class("M4", "INDEX1")
+
+# DEFINICION DE MOTORES DE CORRIENTE DIRECTA
+ELEVADOR_GARRA = "DC8" #PUERTO 8 MOTOR DE POLEA
+M_SUBIR_MANOS = "DC8" #PUERTO 8 MOTOR DE POLEA
+M_BANDA_2 = "DC7" #PUERTO 7 MOTOR DE BANDA HORIZONTAL
+M_BANDA_1 = "DC5" #PUERTO 5 MOTOR DE INTAKE
+
+garra_s = smartservo_class("M6", "INDEX1") #PUERTO M6 SERVO DEL GRIPPER
+Lanzador_s = smartservo_class("M5", "INDEX1") #PUERTO M5 SERVO DEL DISPARADOR
+Bandera_s = smartservo_class("M5", "INDEX2") #PUERTO M5 I2C SERVO DE LA BANDERA
+kpot = 0.8
+
+# SENSORES
+rgb_sensor = dual_rgb_sensor_class("PORT4", "INDEX1") #PUERTO 4 SENSOR RGB
+distance_sensor = ranging_sensor_class("PORT1", "INDEX1") #PUERTO 1 SENSOR DE DISTANCIA DEL GRIPPER
+dis_der_sen = ranging_sensor_class("PORT5", "INDEX1") #PUERT5 SENSOR DEDISTANCIA DEL PARALELO DERECHO 
+dis_izq_sen = ranging_sensor_class("PORT5", "INDEX2") #PUERTO 5 I2C SENSOR DE DISTANCIA DEL PARALELO IZQUIERDO
+# bluetooth upload conectado en 5
+# bluetooth gamepad conectado en 4
 
 # Ks
 kP = 35  # bajo 0.15 le cuesta mucho avanzar, claro que se debe al nano power
@@ -33,19 +60,23 @@ expelled_error = 0
 # DIAMETER = 6.56  # cm
 DIAMETER = 7  # cm
 
-#   MEASURES
+# MEDIDAS
 ROBOT_HEIGHT = 41  # intake to back
 ROBOT_WIDTH = 41.1  # garra to back
-ROBOT_DIAMETER = (ROBOT_WIDTH * 2 + ROBOT_HEIGHT * 2) ** 0.5  # CM
+ROBOT_DIAMETER = (ROBOT_WIDTH ** 2 + ROBOT_HEIGHT ** 2) ** 0.5  # CM
 ROBOT = 38.4
-# ESPA = ROBOT / 2 + (ROBOT * 2 + ROBOT_HEIGHT * 2) ** 0.5 / 2 + 2.075
+
+# ESPA = ROBOT / 2 + (ROBOT ** 2 + ROBOT_HEIGHT ** 2) ** 0.5 / 2 + 2.075
 ESPA = 11
+
 # TO_LEFT = 12.25 + 12 + 20 + 12 - ROBOT/2
 TO_LEFT = 12.25 + 12 + 20 + 12 - ROBOT/2 + 23 + 12 + 14  # faltan 12 + 10 + 4
+
 # TO_FRONT = -(15 + 50 + 20/2) - ROBOT - ESPA + 209.25
 TO_FRONT = 95.85 + 50 + ESPA * 0.4 - 1
 LITTLE_DIS = 20 + 12
 BIG_DIS = 23 + 12
+
 #   POWERS
 NANO_POWER = 10  # poder minimo para vencer la reduccion
 MIN_POWER = 53
@@ -65,40 +96,13 @@ TIME_90_DEG_D = 0.67  # 460
 TIME_90_DEG_D_START = 0.500
 TIME_180_DEG = 1.28
 
-#   MOTORES ENCODER
-fl = encoder_motor_class("M1", "INDEX1")
-fr = encoder_motor_class("M2", "INDEX1")
-bl = encoder_motor_class("M3", "INDEX1")
-br = encoder_motor_class("M4", "INDEX1")
-
-#   DC MOTOR DEFINITION
-TELES1 = "DC3"  # PUERTO DEL MOTOR QUE SUBE LA GARRA
-TELES2 = "DC5"  # PUERTO DEL MOTOR 2 QUE SUBE LA GARRA, debe subir al mismo tiempo que 3, izq con garra frente
-TELES3 = "DC6"  # PUERTO DEL MOTOR 3 QUE SUBE LA GARRA, debe subir al mismo tiempo que 2, der con garra frente
-ELEVADOR_GARRA = "DC1"
-M_SUBIR_MANOS = "DC1"
-M_BANDA_2 = "DC2"
-M_BANDA_1 = "DC3"
-BANDERA = "DC4"
-
-garra_s = smartservo_class("M6", "INDEX1")
-Lanzador_s = smartservo_class("M5", "INDEX1")  # rotar
-kpot = 0.8
-#   SENSORES
-rgb_sensor = dual_rgb_sensor_class("PORT4", "INDEX1")
-distance_sensor = ranging_sensor_class("PORT1", "INDEX1")
-dis_der_sen = ranging_sensor_class("PORT5", "INDEX1")
-dis_izq_sen = ranging_sensor_class("PORT5", "INDEX2")
-# bluetooth upload conectado en 5
-# bluetooth gamepad conectado en 4
-
 #   STOP_TIMES
 # 1 or 0 para desactivar o activar los brushless
 girar_brush = 0
 STOP_TIME = 0.5
+
+
 #   TEST ROUTINES
-
-
 def holly_jolly_christmas(times=5):
     for i in range(times):
         rgb_sensor.set_led_color("green")
@@ -108,9 +112,8 @@ def holly_jolly_christmas(times=5):
         rgb_sensor.set_led_color("blue")
         time.sleep(0.1)
 
+
 #   MAIN CONTROL ROUTINES
-
-
 def powerAll(flP, frP, blP, brP):
     fl.set_power(flP)
     fr.set_power(-frP)
@@ -146,9 +149,8 @@ def stop(sl=0):
     powerAll(0, 0, 0, 0)
     time.sleep(sl)
 
+
 #   PID ROUTINES
-
-
 def max_autonomo(potencia):
     if potencia > 70:
         potencia = 70
@@ -218,7 +220,7 @@ def paralelar():
 
 Kx = 8
 
-
+# RUTINA DE ALINEACION
 def alinear():
     terminado = False
     global Kx
@@ -249,6 +251,7 @@ def alinear():
     br.set_speed(0)
 
 
+# DEFINIR IR A LA IZQUIERDA
 def go_left(distance):
     # initial encoder es el angulo desde que se mide el error
     initial_encoder = fl.get_value("angle")
@@ -270,6 +273,7 @@ def go_left(distance):
         powerAll(-f_power, f_power * 1.6, f_power * 1.4, -f_power)
 
 
+# DEFINIR LLEGAR A 
 def run_to(distance):  # run using PID; distance [cm]
     # initial encoder es el angulo desde que se mide el error
     distance = -distance
@@ -308,7 +312,7 @@ def run_to(distance):  # run using PID; distance [cm]
     if end:
         Manual()
 
-
+# DEFINIR LA FUNCION DE OBTENCION DEL ERROR
 def get_error(distance, initial_encoder=0):  # distance [cm]
     # No falta hacer la correccion de la reduccion
 
@@ -322,15 +326,15 @@ def get_error(distance, initial_encoder=0):  # distance [cm]
 
     return error
 
-
+# DEFINIR LA FUNCION DE PROPORCIONAL
 def get_P(error):
     return error * kP
 
-
+# DEFINIR LA FUNCION DEL DERIVATIVO
 def get_D(error, l_error):
     return (error - l_error) * kD
 
-
+# DEFINIR LA FUNCION DE MOVIMIENTO DEL SERVO DE LA GARRA
 def move_servo_to(angle):
     # initial encoder es el angulo desde que se mide el error
     initial_angle = garra_s.get_value("angle")
@@ -345,7 +349,7 @@ def move_servo_to(angle):
 
         garra_s.set_power(f_power)
 
-
+# DEFINIR LA FUNCION DE OBTECION DEL ERROR DEL SERVO DE LA GARRA
 def get_error_servo(angle, initial_encoder=0):  # distance [cm]
     angle_done = garra_s.get_value("angle") - initial_encoder
     error = angle - angle_done
@@ -354,7 +358,7 @@ def get_error_servo(angle, initial_encoder=0):  # distance [cm]
         return 0
     return error
 
-
+# DEFINIR LA POSICION DEL SERVO A NIVEL DEL SUELO
 def pos_garra_at(height):
     error = 0.001  # solo para que marque error
     l_error = 0
@@ -369,7 +373,7 @@ def pos_garra_at(height):
             end = True
             break
         error = get_error_garra(height)
-        # nueva filosofia PID
+        # nueva filosofi­a PID
         #
         f_power = error * kPG
         f_power += (error - l_error) * kDG
@@ -390,7 +394,7 @@ def pos_garra_at(height):
     if end:
         Manual()
 
-
+# DEFINIR EL ERROR OBTENIDO DE LA GARRA AL LLEGAR AL LUGAR DETERMINADO
 def get_error_garra(goal):
     global expelled_error
     actual_pos = distance_sensor.get_distance()
@@ -400,9 +404,10 @@ def get_error_garra(goal):
         error = 0
 
     return error
+
 #   AUTONOMOUS ROUTINES
 
-
+# DEFINIR LA FUNCION PARA BAJAR CUBOS
 def bajarTodos():
     # comenzamos con la garra hasta abajo con el robot justo delante del primer cubo
 
@@ -413,32 +418,32 @@ def bajarTodos():
     for distance in distances:
         bajarCubo(distance)
 
-
+# DEFINIR LA FUNCION PARA CONTROL DE MOVIMIENTO Y BAJAR EL CUBO
 def bajarCubo(distance):
     TIME = 0.3
 
     # paralelar()
     check_time()
 
-    pos_garra_at(25.4 + 2)
+    pos_garra_at(38 + 2)#25.4 + 2
     check_time()
-    pos_garra_at(25.4 + 2)
+    pos_garra_at(38 + 2)#25.4 + 2
     check_time()
     time.sleep(TIME)
     check_time()
 
-    run_to(ESPA * 1.5 + 2)
+    run_to(ESPA * 2 + 3) #1.5 + 2
     check_time()
     time.sleep(TIME)
     check_time()
 
     # garra_s.move(CLOSE_G, 200)
     # move_servo_to(CLOSE_G)
-    garra_s.set_power(100)
+    garra_s.set_power(-100)
     check_time()
     time.sleep(0.5)
     check_time()
-    garra_s.set_power(5)
+    garra_s.set_power(-5)
     check_time()
     time.sleep(TIME)
     check_time()
@@ -459,7 +464,7 @@ def bajarCubo(distance):
     time.sleep(TIME)
     check_time()
 
-    garra_s.set_power(-100)
+    garra_s.set_power(100)
     check_time()
     time.sleep(0.5)
     check_time()
@@ -468,8 +473,8 @@ def bajarCubo(distance):
     time.sleep(TIME)
     check_time()
 
-    izquierda(60)
-    time.sleep(1.5)
+    izquierda(50)
+    time.sleep(1)
     stop()
     Manual()
 
@@ -485,7 +490,7 @@ def bajarCubo(distance):
 
     # garra_s.move(OPEN_G, 200)
     # move_servo_to(OPEN_G)
-    garra_s.set_power(-100)
+    garra_s.set_power(100)
     check_time()
     time.sleep(0.5)
     check_time()
@@ -521,37 +526,36 @@ def bajarCubo(distance):
     # pos_garra_at(25.4 + 1)
     # time.sleep(1)
 
-
+# DEFINE LA FUNCION EN EL QUE SE VERIFICA EL TIEMPO DE FUNCION DEL AUTONOMO EN 30 SG
 def check_time():
     if timer() >= 29:
         stop()
         Manual()
     ...
 
-
+# DEFINE LA FUNCION PARA EVITAR QUE EL SERVO AL MOMENTO DE CERRAR SE DAÑE
 def cerrar_garra():
     MAX_CURRENT = 500
     MAX_VOLTAGE = 4.8
     while True:
         if garra_s.get_value("current") > MAX_CURRENT or garra_s.get_value("voltage") > MAX_VOLTAGE:
             break
-        garra_s.set_power(80)
+        garra_s.set_power(80)#CAMBIAR POLARIDAD
 
     garra_s.set_power(0)
     ...
 
-
+# DEFINE LA FUNCION PARA ABRIR EL GRIPPER
 def abrir_garra():
-    # garra_s.set_power(-100) #MOVER SI EL SERVO VA ALREVEZ
+    # garra_s.set_power(-100)
     # time.sleep(0.5)
     # garra_s.set_power(0)
     #
-    garra_s.move(-45)   #MOVER SI VA AL REVEZ
+    garra_s.move(-45)#CAMBIAR POLARIDAD
     garra_s.set_power(0)
     ...
 
-
-
+# DEFINE LA FUNCION DE CONTROL DE PODER PARA LOS SERVOS
 def adminGarraPower(poweri):
     # control del servo para que no se queme
 
@@ -566,9 +570,7 @@ def adminGarraPower(poweri):
         garra_s.set_power(0)
     ...
 
-# lava
-
-#DISTANCIAS DE LA CANCHA
+# DEFINE PRUEBA DE AUTONOMO 1
 def Autonomous():
     reset_timer()
     reposo = 0.5
@@ -600,18 +602,17 @@ def Autonomous():
 
     bajarTodos()
 
-# asesamex01 - 2111090526
 ################################
 #           MANUAL
 ###############################
 
-
+# DEFINIR LA FUNCION PARA EVITAR QUE SE QUEME EL SERVO AL AGARRAR EL CUBO
 def pararServo(smart_servo):
     current = 50
     if (smart_servo.get_value("current") > current):
         smart_servo.set_power(0)
 
-
+# DEFINIR LA POTENCIA MAXIMA DE LOS MOTORES
 def max(potencia):
     if potencia > 100:
         potencia = 100
@@ -623,14 +624,12 @@ def max(potencia):
 switch_garra_banda = 0
 direction = 1
 
-# manita
-
+# DEFINIR TODAS LAS VARIABLES A USAR
 def todo():
     global kpot
     global direction
     global switch_garra_banda
     global auto
-
     # ----------------------Movimiento del chasis-----------------------
     lx = gamepad.get_joystick("Lx")
     ly = gamepad.get_joystick("Ly")
@@ -640,93 +639,104 @@ def todo():
     pow_M3 = -ly - lx + rx
     pow_M4 = ly - lx + rx
     time.sleep(0.001)
-    fl.set_power(max(pow_M1 * kpot))
-    fr.set_power(max(pow_M2 * kpot))
-    bl.set_power(max(pow_M3 * kpot))
-    br.set_power(max(pow_M4 * kpot))
+    fl.set_power(max(pow_M1*kpot))
+    fr.set_power(max(pow_M2*kpot))
+    bl.set_power(max(pow_M3*kpot))
+    br.set_power(max(pow_M4*kpot))
 
-    # Cambia el valor de la potencia para ir más rápido si se desea
+    # Cambia el valor de la potencia para ir mas rapido si se desea
     if gamepad.is_key_pressed("L_Thumb") or gamepad.is_key_pressed("R_Thumb"):
         kpot = 1
     else:
-        kpot = 0.68
-
+        kpot = 0.70
     # ----------------------Sistema de lanzadora-----------------------
     # Primer intake
     # Variables para controlar el estado del motor y su dirección
+
     motor_activado = False
     direccion = 1  # 1 para adelante, -1 para atrás
 
     # Bucle principal del programa
     while True:
         time.sleep(0.01)
+
         # Verificar si se ha presionado la tecla N2
         if gamepad.is_key_pressed("N2"):
-            if not motor_activado:  # Si el motor no está activado, lo activamos
-                power_expand_board.set_power(M_BANDA_1, 100)
-                motor_activado = True
-            else:  # Si el motor está activado, lo desactivamos
+            if not motor_activado:
+                direccion = 1
+                power_expand_board.set_power(M_BANDA_1, 100 * direccion)
+                motor_activado = True #control de variable
+            else:
                 power_expand_board.set_power(M_BANDA_1, 0)
-                motor_activado = False
+                motor_activado = False #control de variable
 
         # Verificar si se ha presionado la tecla N3
-        if gamepad.is_key_pressed("N3"):
-            if motor_activado:  # Si el motor está activado, cambiamos la dirección
-                power_expand_board.set_power(M_BANDA_2, 100 * direccion)
-                direccion *= -1
+        if gamepad.is_key_pressed("N3") and motor_activado == True:
+            direccion = -1  # Cambia de sentido
+            power_expand_board.set_power(M_BANDA_1, 100 * direccion)
+        
+        # Desactivar motor si está activado y no se presionan los botones
+        if not gamepad.is_key_pressed("N2") and not gamepad.is_key_pressed("N3") and motor_activado:
+            direccion = 1  # regresar al sentido normal
+            power_expand_board.set_power(M_BANDA_1, 0)
+            motor_activado = False
 
-        # Banda de aeropuerto
-        if gamepad.is_key_pressed("N1"):
-            power_expand_board.set_power(M_BANDA_2, -100)
-        elif gamepad.is_key_pressed("N4"):
-            power_expand_board.set_power(M_BANDA_2, 100)
-        else:
-            power_expand_board.set_power(M_BANDA_2, 0)
 
-        # ----------------------Sistema de manitas-----------------------
-        if gamepad.is_key_pressed("Up"):
-            power_expand_board.set_power(M_SUBIR_MANOS, -100)
-        elif gamepad.is_key_pressed("Down"):
-            power_expand_board.set_power(M_SUBIR_MANOS, 100)
-        else:
-            power_expand_board.set_power(M_SUBIR_MANOS, 0)
+    # Banda de aereopuerto
+    if gamepad.is_key_pressed("N1"):
+        power_expand_board.set_power(M_BANDA_2, 100)
+    elif gamepad.is_key_pressed("N4"):
+        power_expand_board.set_power(M_BANDA_2, -100)
+    else:
+        power_expand_board.set_power(M_BANDA_2, 0)
 
-        # Girar el servo de ángulo de lanzadora
-        if gamepad.is_key_pressed("R2"):
-            Lanzador_s.set_power(10)  # original 15
-            pararServo(Lanzador_s)
-        elif gamepad.is_key_pressed("L2"):
-            Lanzador_s.set_power(-10)
-            pararServo(Lanzador_s)
-        else:
-            Lanzador_s.set_power(0)
+    # ----------------------Sistema de manitas-----------------------
+    if gamepad.is_key_pressed("Up"):
+        power_expand_board.set_power(M_SUBIR_MANOS, -100)
+    elif gamepad.is_key_pressed("Down"):
+        power_expand_board.set_power(M_SUBIR_MANOS, 100)
+    else:
+        power_expand_board.set_power(M_SUBIR_MANOS, 0)
 
-        # Controla el gripper
-        if gamepad.is_key_pressed("R1"):
-            garra_s.set_power(-90)  # original 90
-            pararServo(garra_s)
-        elif gamepad.is_key_pressed("L1"):
-            garra_s.set_power(90)
-            pararServo(garra_s)
-        else:
-            garra_s.set_power(0)
+    # girar hacia un lado y otro un servo o pararlo
+    if gamepad.is_key_pressed("R2"):
+        Lanzador_s.set_power(-70)  # original 70
+        pararServo(Lanzador_s)
+    elif gamepad.is_key_pressed("L2"):
+        Lanzador_s.set_power(70)
+        pararServo(Lanzador_s)
+    else:
+        Lanzador_s.set_power(0)
 
-        # ---------------- Controlar Bandera --------------------
-        if gamepad.is_key_pressed("Right"):
-            power_expand_board.set_power(BANDERA, 100)
-        elif gamepad.is_key_pressed("Left"):
-            power_expand_board.set_power(BANDERA, -100)
-        else:
-            power_expand_board.stop(BANDERA)
+    # Lo mismo que la anterior pero para otro servo
+    if gamepad.is_key_pressed("R1"):
+        garra_s.set_power(-90)  # original 5
+        pararServo(garra_s)
+    elif gamepad.is_key_pressed("L1"):
+        garra_s.set_power(90)
+        pararServo(garra_s)
+    else:
+        garra_s.set_power(0)
 
-        # ---------------- Activar Autonomo --------------------
-        if gamepad.is_key_pressed("≡") and not auto:
-            auto = True
-            automate2()
+# ---------------- Controlar Bandera_s --------------------
 
-        # --------------- Control Brushless ----------------------
-        power_expand_board.set_power("BL1", girar_brush * 60)  # original 50
-        power_expand_board.set_power("BL2", girar_brush * 60)
+    if gamepad.is_key_pressed("Right"):
+        Bandera_s.set_power(-70)  # original 5
+        pararServo(Bandera_s)
+    elif gamepad.is_key_pressed("Left"):
+        Bandera_s.set_power(70)
+        pararServo(Bandera_s)
+    else:
+        Bandera_s.set_power(0)
+
+# ---------------- Activar Autonomo --------------------
+
+    if gamepad.is_key_pressed("≡") and not auto:
+        auto = True
+        automate2()
+# --------------- Control Brushless ----------------------
+    power_expand_board.set_power("BL1", girar_brush*60)  # original50
+    power_expand_board.set_power("BL2", girar_brush*60)
 
 
 def boton(btn, func):
@@ -750,7 +760,6 @@ auto = False
 
 
 def Manual():
-    while True:
         todo()
         boton("+", para_giro_brush)
 
@@ -779,6 +788,7 @@ def test_turn_times():
 
 
 def test_paralelar():
+
     paralelar()
     time.sleep(0.8)
 
@@ -790,39 +800,44 @@ def test_paralelar():
     time.sleep(0.8)
 
 
-########################################################
+# DEFINIR LA FUNCION DE AUTONOMO 2 (FINAL)
 def automate2():
     reset_timer()
     reposo = 0.25
 
-    # Inicia en la esquina derecha inferior, viendo a la izquierda (viendo al robot aliado)
+    # inicia en la esquina derecha inferior, viendo a la izquierda (viendo al robot aliado)
+    #
     rgb_sensor.set_led_color("red")
     # 3.5 como margen de error, porque choca con la dis pura
-    run_to(TO_LEFT * 0.4 + 4)
+    run_to(TO_LEFT * 0.4 + 7) #0.4 + 4
     time.sleep(reposo)
 
-    girarDerecha(60)
+    girarDerecha(54)#60
     time.sleep(TIME_90_DEG_D)
     stop()
     time.sleep(reposo)
 
-    run_to(TO_FRONT * 0.28)
-    time.sleep(reposo)
+    # alinear()
+    # time.sleep(reposo)
 
-    girarIzquierda(60)
-    time.sleep(TIME_90_DEG_I)
-    stop()
-    time.sleep(reposo)
+    #run_to(TO_FRONT * 0.28)#0.28
 
-    run_to(TO_LEFT * 0.6 + 15 + 1.5 - 29 + 0.3)
-    time.sleep(reposo)
+    #girarIzquierda(60)#60
+    #time.sleep(TIME_90_DEG_I)
+    #stop()
+    #time.sleep(reposo)
 
-    girarDerecha(60)
-    time.sleep(TIME_90_DEG_D)
-    stop()
-    time.sleep(reposo)
+    run_to(TO_LEFT * 0.6 + 15 + 1.5 - 29 + 0.3) #0.6 + 15 + 1.5 - 29 + 0.3 
 
-    run_to(TO_FRONT * 0.72 - 9.5 - 2)
+    #girarDerecha(60) #60
+    #time.sleep(TIME_90_DEG_D)
+    #stop()
+    #time.sleep(reposo)
+
+    # alinear()
+    # time.sleep(reposo)
+
+    run_to(TO_FRONT * 0.80 - 5) #0.72 - 9.5 - 2
     time.sleep(reposo)
 
     stop()
@@ -830,6 +845,9 @@ def automate2():
 
     bajarTodos()
 
-
+    # DEFINIR EL BUBLE PARA SABER SI ESTA EN MODO AUTONO O MODO MANUAL
 while True:
-    Manual()
+            if power_manage_module.is_auto_mode():
+                automate2()
+            else:
+                Manual()
