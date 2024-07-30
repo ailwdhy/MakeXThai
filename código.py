@@ -681,62 +681,61 @@ def todo():
             power_expand_board.set_power(M_BANDA_1, 0)
             motor_activado = False
 
+        # Banda de aereopuerto
+        if gamepad.is_key_pressed("N1"):
+            power_expand_board.set_power(M_BANDA_2, 100)
+        elif gamepad.is_key_pressed("N4"):
+            power_expand_board.set_power(M_BANDA_2, -100)
+        else:
+            power_expand_board.set_power(M_BANDA_2, 0)
 
-    # Banda de aereopuerto
-    if gamepad.is_key_pressed("N1"):
-        power_expand_board.set_power(M_BANDA_2, 100)
-    elif gamepad.is_key_pressed("N4"):
-        power_expand_board.set_power(M_BANDA_2, -100)
-    else:
-        power_expand_board.set_power(M_BANDA_2, 0)
+        # ----------------------Sistema de manitas-----------------------
+        if gamepad.is_key_pressed("Up"):
+            power_expand_board.set_power(M_SUBIR_MANOS, -100)
+        elif gamepad.is_key_pressed("Down"):
+            power_expand_board.set_power(M_SUBIR_MANOS, 100)
+        else:
+            power_expand_board.set_power(M_SUBIR_MANOS, 0)
 
-    # ----------------------Sistema de manitas-----------------------
-    if gamepad.is_key_pressed("Up"):
-        power_expand_board.set_power(M_SUBIR_MANOS, -100)
-    elif gamepad.is_key_pressed("Down"):
-        power_expand_board.set_power(M_SUBIR_MANOS, 100)
-    else:
-        power_expand_board.set_power(M_SUBIR_MANOS, 0)
+        # girar hacia un lado y otro un servo o pararlo
+        if gamepad.is_key_pressed("R2"):
+            Lanzador_s.set_power(-70)  # original 70
+            pararServo(Lanzador_s)
+        elif gamepad.is_key_pressed("L2"):
+            Lanzador_s.set_power(70)
+            pararServo(Lanzador_s)
+        else:
+            Lanzador_s.set_power(0)
 
-    # girar hacia un lado y otro un servo o pararlo
-    if gamepad.is_key_pressed("R2"):
-        Lanzador_s.set_power(-70)  # original 70
-        pararServo(Lanzador_s)
-    elif gamepad.is_key_pressed("L2"):
-        Lanzador_s.set_power(70)
-        pararServo(Lanzador_s)
-    else:
-        Lanzador_s.set_power(0)
+        # Lo mismo que la anterior pero para otro servo
+        if gamepad.is_key_pressed("R1"):
+            garra_s.set_power(-90)  # original 5
+            pararServo(garra_s)
+        elif gamepad.is_key_pressed("L1"):
+            garra_s.set_power(90)
+            pararServo(garra_s)
+        else:
+            garra_s.set_power(0)
 
-    # Lo mismo que la anterior pero para otro servo
-    if gamepad.is_key_pressed("R1"):
-        garra_s.set_power(-90)  # original 5
-        pararServo(garra_s)
-    elif gamepad.is_key_pressed("L1"):
-        garra_s.set_power(90)
-        pararServo(garra_s)
-    else:
-        garra_s.set_power(0)
+    # ---------------- Controlar Bandera_s --------------------
 
-# ---------------- Controlar Bandera_s --------------------
+        if gamepad.is_key_pressed("Right"):
+            Bandera_s.set_power(-70)  # original 5
+            pararServo(Bandera_s)
+        elif gamepad.is_key_pressed("Left"):
+            Bandera_s.set_power(70)
+            pararServo(Bandera_s)
+        else:
+            Bandera_s.set_power(0)
 
-    if gamepad.is_key_pressed("Right"):
-        Bandera_s.set_power(-70)  # original 5
-        pararServo(Bandera_s)
-    elif gamepad.is_key_pressed("Left"):
-        Bandera_s.set_power(70)
-        pararServo(Bandera_s)
-    else:
-        Bandera_s.set_power(0)
+    # ---------------- Activar Autonomo --------------------
 
-# ---------------- Activar Autonomo --------------------
-
-    if gamepad.is_key_pressed("≡") and not auto:
-        auto = True
-        automate2()
-# --------------- Control Brushless ----------------------
-    power_expand_board.set_power("BL1", girar_brush*60)  # original50
-    power_expand_board.set_power("BL2", girar_brush*60)
+        if gamepad.is_key_pressed("≡") and not auto:
+            auto = True
+            automate2()
+    # --------------- Control Brushless ----------------------
+        power_expand_board.set_power("BL1", girar_brush*60)  # original50
+        power_expand_board.set_power("BL2", girar_brush*60)
 
 
 def boton(btn, func):
